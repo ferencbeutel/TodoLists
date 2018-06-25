@@ -5,9 +5,9 @@
     android:layout_width="match_parent">
 
     <item
-        android:id="@+id/action_add_todo"
-        android:icon="@android:drawable/ic_menu_add"
-        android:title="Add Todo"
+        android:id="@+id/action_edit_todo"
+        android:icon="@android:drawable/ic_menu_edit"
+        android:title="Edit Todo"
         app:showAsAction="always" />
 
 </menu>

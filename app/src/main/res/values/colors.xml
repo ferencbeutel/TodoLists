@@ -3,4 +3,10 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+    <color name="errorColor">#6ebf2a2a</color>
+
+    <color name="textColor">#000000</color>
+    <color name="disabledTextColor">#FF7B7B7B</color>
+    <color name="textErrorColor">#bf2a2a</color>
 </resources>
