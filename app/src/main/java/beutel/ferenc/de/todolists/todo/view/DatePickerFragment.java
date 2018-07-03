@@ -1,38 +1,38 @@
 package beutel.ferenc.de.todolists.todo.view;
 
+import static java.lang.Integer.parseInt;
+
+import java.time.LocalDate;
+
 import android.app.DatePickerDialog;
+import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.DatePicker;
-import beutel.ferenc.de.todolists.R;
+import beutel.ferenc.de.todolists.R.id;
 
-import java.time.LocalDate;
+public class DatePickerFragment extends DialogFragment implements OnDateSetListener {
 
-import static java.lang.Integer.parseInt;
+  private static final String DELIMITER = ".";
 
-public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
+  static LocalDate parseIntoLocalDate(final String toParse) {
+    final String[] dateParts = toParse.split("\\" + DELIMITER);
+    return LocalDate.of(parseInt(dateParts[2]), parseInt(dateParts[1]), parseInt(dateParts[0]));
+  }
 
-    private static final String DELIMITER = ".";
+  @Override
+  public Dialog onCreateDialog(final Bundle savedInstanceState) {
+    final LocalDate today = LocalDate.now();
 
-    public static LocalDate parseIntoLocalDate(final String toParse) {
-        final String[] dateParts = toParse.split("\\" + DELIMITER);
-        return LocalDate.of(parseInt(dateParts[2]), parseInt(dateParts[1]), parseInt(dateParts[0]));
-    }
+    return new DatePickerDialog(getActivity(), this, today.getYear(), today.getMonthValue(), today.getDayOfMonth());
+  }
 
-    @Override
-    public Dialog onCreateDialog(final Bundle savedInstanceState) {
-        final LocalDate today = LocalDate.now();
-
-        return new DatePickerDialog(getActivity(), this, today.getYear(), today.getMonthValue(), today.getDayOfMonth());
-    }
-
-    @Override
-    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        final Button dueDateButton = getActivity().findViewById(R.id.due_date_button);
-        String newButtonText = dayOfMonth + DELIMITER + month + DELIMITER + year;
-        dueDateButton.setText(newButtonText);
-
-    }
+  @Override
+  public void onDateSet(final DatePicker view, final int year, final int month, final int dayOfMonth) {
+    final Button dueDateButton = getActivity().findViewById(id.due_date_button);
+    final String newButtonText = dayOfMonth + DELIMITER + month + DELIMITER + year;
+    dueDateButton.setText(newButtonText);
+  }
 }

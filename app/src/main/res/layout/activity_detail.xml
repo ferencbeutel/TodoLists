@@ -1,96 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="8sp"
+                tools:context="beutel.ferenc.de.todolists.todolist.view.TodoListActivity">
+
+  <LinearLayout
+    android:id="@+id/detail_title_wrapper"
+    android:layout_width="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:gravity="center_vertical"
+    android:layout_height="wrap_content">
+
+    <TextView
+      android:id="@+id/detail_title"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:textSize="24sp"
+      android:text="todo title"/>
+
+    <ImageView
+      android:id="@+id/detail_favourite_icon"
+      android:src="@drawable/ic_star_border_black_24dp"
+      android:layout_marginLeft="8sp"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"/>
+
+  </LinearLayout>
+
+  <TextView
+    android:id="@+id/detail_dueDateTime"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/detail_title_wrapper"
+    android:textSize="14sp"
+    android:layout_centerHorizontal="true"
+    android:text="due to: 01.01.2000 13:37"/>
+
+  <TextView
+    android:id="@+id/detail_doneDateTime"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/detail_dueDateTime"
+    android:textSize="14sp"
+    android:layout_centerHorizontal="true"
+    android:text="done: 31.12.1999 20:10"/>
+
+  <LinearLayout
+    android:id="@+id/detail_description_wrapper"
+    android:weightSum="10"
+    android:layout_marginTop="32sp"
+    android:gravity="center_horizontal"
+    android:layout_below="@id/detail_doneDateTime"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_margin="8sp"
-    tools:context="beutel.ferenc.de.todolists.todolist.view.TodoListActivity">
+    android:layout_height="wrap_content">
 
-    <LinearLayout
-        android:id="@+id/detail_title_wrapper"
-        android:layout_width="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:gravity="center_vertical"
-        android:layout_height="wrap_content">
+    <TextView
+      android:id="@+id/detail_description"
+      android:layout_width="0sp"
+      android:layout_height="wrap_content"
+      android:layout_weight="7"
+      android:textSize="18sp"
+      android:text="Description of what to do. this can be rather long..."/>
 
-        <TextView
-            android:id="@+id/detail_title"
-            android:layout_width="wrap_content"
+
+  </LinearLayout>
+
+  <TextView
+    android:id="@+id/detail_contacts_headline"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/detail_description_wrapper"
+    android:layout_marginTop="32sp"
+    android:textSize="24sp"
+    android:layout_centerHorizontal="true"
+    android:text="Contacts"/>
+
+  <ImageButton
+    android:id="@+id/detail_add_contact"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:src="@android:drawable/ic_input_add"
+    android:layout_below="@id/detail_contacts_headline"
+    android:onClick="onAddContactClick"
+    android:contentDescription="add contact"/>
+
+  <ListView android:id="@+id/detail_contacts_list"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="24sp"
-            android:text="todo title" />
-
-        <ImageView
-            android:id="@+id/detail_favourite_icon"
-            android:src="@drawable/ic_star_border_black_24dp"
-            android:layout_marginLeft="8sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/detail_dueDateTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/detail_title_wrapper"
-        android:textSize="14sp"
-        android:layout_centerHorizontal="true"
-        android:text="due to: 01.01.2000 13:37" />
-
-    <TextView
-        android:id="@+id/detail_doneDateTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/detail_dueDateTime"
-        android:textSize="14sp"
-        android:layout_centerHorizontal="true"
-        android:text="done: 31.12.1999 20:10" />
-
-    <LinearLayout
-        android:id="@+id/detail_description_wrapper"
-        android:weightSum="10"
-        android:layout_marginTop="32sp"
-        android:gravity="center_horizontal"
-        android:layout_below="@id/detail_doneDateTime"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:id="@+id/detail_description"
-            android:layout_width="0sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="7"
-            android:textSize="18sp"
-            android:text="Description of what to do. this can be rather long..." />
-
-
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/detail_contacts_headline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/detail_description_wrapper"
-        android:layout_marginTop="32sp"
-        android:textSize="24sp"
-        android:layout_centerHorizontal="true"
-        android:text="Contacts" />
-
-    <ImageButton
-        android:id="@+id/detail_add_contact"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:src="@android:drawable/ic_input_add"
-        android:layout_below="@id/detail_contacts_headline"
-        android:onClick="onAddContactClick"
-        android:contentDescription="add contact" />
-
-    <ListView android:id="@+id/detail_contacts_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8sp"
-        android:layout_below="@id/detail_add_contact"/>
+            android:layout_marginTop="8sp"
+            android:layout_below="@id/detail_add_contact"/>
 
 </RelativeLayout>

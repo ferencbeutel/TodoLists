@@ -1,119 +1,109 @@
 package beutel.ferenc.de.todolists.contact.domain;
 
+import static android.provider.BaseColumns._ID;
+import static beutel.ferenc.de.todolists.contact.domain.ContactContract.ContactEntry.ALL_COLUMNS;
+import static beutel.ferenc.de.todolists.contact.domain.ContactContract.ContactEntry.TABLE;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
-import android.provider.ContactsContract;
-import beutel.ferenc.de.todolists.R;
+import android.provider.ContactsContract.Contacts;
 import beutel.ferenc.de.todolists.common.domain.DBHelper;
 import beutel.ferenc.de.todolists.todo.domain.Todo;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static android.provider.BaseColumns._ID;
-import static beutel.ferenc.de.todolists.contact.domain.ContactContract.ContactEntry.ALL_COLUMNS;
-import static beutel.ferenc.de.todolists.contact.domain.ContactContract.ContactEntry.TABLE;
-
 public class ContactRepository extends SQLiteOpenHelper {
 
-    private static List<Contact> cursorToContact(final Cursor cursor, final Context context) {
-        final List<Contact> fetchedContacts = new ArrayList<>();
+  private final Context context;
 
-        while (cursor.moveToNext()) {
-            final int id = cursor.getInt(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-            final Cursor moreDataCursor = context.getContentResolver().query(ContactsContract.Contacts.CONTENT_URI,
-                    new String[]{ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts.PHOTO_THUMBNAIL_URI},
-                    ContactsContract.Contacts._ID + "=?",
-                    new String[]{String.valueOf(id)},
-                    null);
+  public ContactRepository(final Context context) {
+    super(context, ContactContract.DB_NAME, null, ContactContract.DB_VERSION);
 
-            if (moreDataCursor != null && moreDataCursor.moveToFirst()) {
-                String photoUri = moreDataCursor.getString(moreDataCursor.getColumnIndex(ContactsContract.Contacts.PHOTO_THUMBNAIL_URI));
-                fetchedContacts.add(Contact.builder()
-                        ._id(id)
-                        .name(moreDataCursor.getString(moreDataCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)))
-                        .profileImageUri(photoUri != null ? Uri.parse(photoUri) : null)
-                        .build());
-                moreDataCursor.close();
-            }
-        }
+    this.context = context;
+  }
 
-        cursor.close();
-        return fetchedContacts;
+  private static List<Contact> cursorToContact(final Cursor cursor, final Context context) {
+    final List<Contact> fetchedContacts = new ArrayList<>();
+
+    while (cursor.moveToNext()) {
+      final int id = cursor.getInt(cursor.getColumnIndex(_ID));
+      final Cursor moreDataCursor = context.getContentResolver()
+        .query(Contacts.CONTENT_URI, new String[]{Contacts.DISPLAY_NAME, Contacts.PHOTO_THUMBNAIL_URI}, _ID + "=?",
+          new String[]{String.valueOf(id)}, null);
+
+      if (moreDataCursor != null && moreDataCursor.moveToFirst()) {
+        final String photoUri = moreDataCursor.getString(moreDataCursor.getColumnIndex(Contacts.PHOTO_THUMBNAIL_URI));
+        fetchedContacts.add(Contact.builder()
+          ._id(id)
+          .name(moreDataCursor.getString(moreDataCursor.getColumnIndex(Contacts.DISPLAY_NAME)))
+          .profileImageUri(photoUri != null ? Uri.parse(photoUri) : null)
+          .build());
+        moreDataCursor.close();
+      }
     }
 
-    private final Context context;
+    cursor.close();
+    return fetchedContacts;
+  }
 
-    public ContactRepository(Context context) {
-        super(context, ContactContract.DB_NAME, null, ContactContract.DB_VERSION);
+  @Override
+  public void onCreate(final SQLiteDatabase db) {
+    DBHelper.CREATE_DB_COMMANDS().forEach(db::execSQL);
+  }
 
-        this.context = context;
+  @Override
+  public void onUpgrade(final SQLiteDatabase db, final int oldVersion, final int newVersion) {
+    DBHelper.UPDATE_DB_COMMANDS().forEach(db::execSQL);
+  }
+
+  public Integer insertByUri(final Uri contactUri) {
+    final SQLiteDatabase writeableDB = getWritableDatabase();
+    final Integer contactId = getContactId(contactUri);
+    if (contactId != null) {
+      writeableDB.insert(TABLE, null, contactToContentValues(Contact.builder()._id(contactId).build()));
+    }
+    writeableDB.close();
+
+    return contactId;
+  }
+
+  private Integer getContactId(final Uri contactUri) {
+    final Cursor idCursor = context.getContentResolver().query(contactUri, null, null, null);
+
+    if (idCursor == null) {
+      return null;
     }
 
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        DBHelper.CREATE_DB_COMMANDS().forEach(db::execSQL);
+    if (idCursor.moveToFirst()) {
+      final Integer resultId = idCursor.getInt(idCursor.getColumnIndex(_ID));
+      idCursor.close();
+      return resultId;
     }
+    idCursor.close();
+    return null;
+  }
 
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        DBHelper.UPDATE_DB_COMMANDS().forEach(db::execSQL);
+  private ContentValues contactToContentValues(final Contact contact) {
+    final ContentValues values = new ContentValues();
+    values.put(_ID, contact.get_id());
+
+    return values;
+  }
+
+  public List<Contact> findForTodo(final Todo todo) {
+    if (todo.getContactIds().isEmpty()) {
+      return new ArrayList<>();
     }
+    final SQLiteDatabase readableDB = getReadableDatabase();
+    final List<Contact> result = cursorToContact(
+      readableDB.query(TABLE, ALL_COLUMNS, _ID + " IN (" + todo.contactIdString() + ")", null, null, null, null), context);
+    readableDB.close();
 
-    public Integer insertByUri(final Uri contactUri) {
-        final SQLiteDatabase writeableDB = getWritableDatabase();
-        Integer contactId = getContactId(contactUri);
-        if (contactId != null) {
-            writeableDB.insert(TABLE, null, contactToContentValues(Contact.builder()
-                    ._id(contactId)
-                    .build()));
-        }
-        writeableDB.close();
-
-        return contactId;
-    }
-
-    private Integer getContactId(final Uri contactUri) {
-        Cursor idCursor = context.getContentResolver().query(contactUri, null, null, null);
-
-        if (idCursor == null) {
-            return null;
-        }
-
-        if (idCursor.moveToFirst()) {
-            final Integer resultId = idCursor.getInt(idCursor.getColumnIndex(ContactsContract.Contacts._ID));
-            idCursor.close();
-            return resultId;
-        }
-        idCursor.close();
-        return null;
-    }
-
-    private ContentValues contactToContentValues(final Contact contact) {
-        final ContentValues values = new ContentValues();
-        values.put(_ID, contact.get_id());
-
-        return values;
-    }
-
-    public List<Contact> findForTodo(final Todo todo) {
-        if (todo.getContactIds().size() == 0) {
-            return new ArrayList<>();
-        }
-        final SQLiteDatabase readableDB = getReadableDatabase();
-        List<Contact> result = cursorToContact(readableDB.query(TABLE,
-                ALL_COLUMNS,
-                _ID + " IN (" + todo.contactIdString() + ")",
-                null,
-                null,
-                null,
-                null), context);
-        readableDB.close();
-
-        return result;
-    }
+    return result;
+  }
 }

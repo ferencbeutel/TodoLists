@@ -1,62 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_margin="8sp"
+              android:gravity="center_vertical"
+              android:onClick="onTodoClick">
+
+  <RelativeLayout
+    android:layout_width="0sp"
     android:layout_height="wrap_content"
-    android:layout_margin="8sp"
-    android:gravity="center_vertical"
-    android:onClick="onTodoClick">
-
-    <RelativeLayout
-        android:layout_width="0sp"
-        android:layout_height="wrap_content"
-        android:layout_weight="10">
-
-        <TextView
-            android:id="@+id/todo_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scrollHorizontally="true"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textSize="20sp"
-            android:text="todo title" />
-
-        <TextView
-            android:id="@+id/todo_dueDateTime"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scrollHorizontally="true"
-            android:layout_below="@id/todo_title"
-            android:layout_alignStart="@id/todo_title"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textSize="14sp"
-            android:text="31.12.1999 13:37" />
-
-    </RelativeLayout>
-
-    <ImageView
-        android:id="@+id/todo_favourite_icon"
-        android:layout_width="0sp"
-        android:layout_height="24sp"
-        android:layout_weight="1"
-        android:src="@drawable/ic_star_border_black_24dp"
-        android:contentDescription="favouriteIcon" />
-
-    <Button
-        android:id="@+id/todo_delete"
-        android:layout_width="0sp"
-        android:maxWidth="24sp"
-        android:layout_height="wrap_content"
-        android:layout_weight="5"
-        android:onClick="onDeleteButtonClick"
-        android:text="Done" />
+    android:layout_weight="10">
 
     <TextView
-        android:id="@+id/todo_id"
-        android:layout_width="0sp"
-        android:layout_height="0sp"
-        android:layout_weight="0"
-        android:visibility="invisible" />
+      android:id="@+id/todo_title"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:scrollHorizontally="true"
+      android:ellipsize="end"
+      android:maxLines="1"
+      android:textSize="20sp"
+      android:text="todo title"/>
+
+    <TextView
+      android:id="@+id/todo_dueDateTime"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:scrollHorizontally="true"
+      android:layout_below="@id/todo_title"
+      android:layout_alignStart="@id/todo_title"
+      android:ellipsize="end"
+      android:maxLines="1"
+      android:textSize="14sp"
+      android:text="31.12.1999 13:37"/>
+
+  </RelativeLayout>
+
+  <ImageView
+    android:id="@+id/todo_favourite_icon"
+    android:layout_width="0sp"
+    android:layout_height="24sp"
+    android:layout_weight="1"
+    android:src="@drawable/ic_star_border_black_24dp"
+    android:contentDescription="favouriteIcon"/>
+
+  <Button
+    android:id="@+id/todo_delete"
+    android:layout_width="0sp"
+    android:maxWidth="24sp"
+    android:layout_height="wrap_content"
+    android:layout_weight="5"
+    android:onClick="onDeleteButtonClick"
+    android:text="Done"/>
+
+  <TextView
+    android:id="@+id/todo_id"
+    android:layout_width="0sp"
+    android:layout_height="0sp"
+    android:layout_weight="0"
+    android:visibility="invisible"/>
 
 </LinearLayout>
