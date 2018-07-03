@@ -8,6 +8,8 @@ import beutel.ferenc.de.todolists.todo.domain.TodoContract.TodoEntry;
 
 public class DBHelper {
 
+  public static boolean NETWORK_REACHABLE = true;
+
   public static List<String> CREATE_DB_COMMANDS() {
     final List<String> commands = new ArrayList<>();
     commands.add("CREATE TABLE " + ContactEntry.TABLE + " ( " + ContactEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + ");");

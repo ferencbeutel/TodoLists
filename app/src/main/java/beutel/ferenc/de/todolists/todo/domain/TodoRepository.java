@@ -1,6 +1,10 @@
 package beutel.ferenc.de.todolists.todo.domain;
 
 import static android.provider.BaseColumns._ID;
+import static beutel.ferenc.de.todolists.common.http.UrlHelper.BACKEND_BASE_URL;
+import static beutel.ferenc.de.todolists.common.http.UrlHelper.TODOS_ENDPOINT;
+import static beutel.ferenc.de.todolists.common.http.UrlHelper.URL_DELIMITER;
+import static beutel.ferenc.de.todolists.common.http.UrlHelper.toUrl;
 import static beutel.ferenc.de.todolists.todo.domain.TodoContract.TodoEntry.ALL_COLUMNS;
 import static beutel.ferenc.de.todolists.todo.domain.TodoContract.TodoEntry.COL_TODO_COMPLETED;
 import static beutel.ferenc.de.todolists.todo.domain.TodoContract.TodoEntry.COL_TODO_CONTACT_IDS;
@@ -12,6 +16,7 @@ import static beutel.ferenc.de.todolists.todo.domain.TodoContract.TodoEntry.TABL
 import static beutel.ferenc.de.todolists.todo.domain.TodoRepository.OrderDirection.ASC;
 import static beutel.ferenc.de.todolists.todo.domain.TodoRepository.OrderDirection.DESC;
 
+import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -22,6 +27,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -29,6 +35,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import beutel.ferenc.de.todolists.common.domain.DBHelper;
+import beutel.ferenc.de.todolists.common.domain.Pair;
+import beutel.ferenc.de.todolists.common.http.AsyncDeleteRequest;
+import beutel.ferenc.de.todolists.common.http.AsyncPutRequest;
+import beutel.ferenc.de.todolists.common.http.ObjectMapperFactory;
 
 public class TodoRepository extends SQLiteOpenHelper {
 
@@ -43,7 +53,7 @@ public class TodoRepository extends SQLiteOpenHelper {
 
     while (cursor.moveToNext()) {
       storedTodos.add(Todo.builder()
-        ._id(cursor.getInt(cursor.getColumnIndex(_ID)))
+        ._id(String.valueOf(cursor.getInt(cursor.getColumnIndex(_ID))))
         .title(cursor.getString(cursor.getColumnIndex(COL_TODO_TITLE)))
         .description(cursor.getString(cursor.getColumnIndex(COL_TODO_DESCRIPTION)))
         .dueDateTime(
@@ -90,10 +100,22 @@ public class TodoRepository extends SQLiteOpenHelper {
     return result;
   }
 
+  public List<Todo> findAll() {
+    final SQLiteDatabase readableDB = getReadableDatabase();
+    final List<Todo> result = cursorToTodo(readableDB.query(TABLE, ALL_COLUMNS, null, null, null, null, null));
+
+    readableDB.close();
+    return result;
+  }
+
   public void insert(final Todo todo) {
     final SQLiteDatabase writeableDB = getWritableDatabase();
     writeableDB.insert(TABLE, null, todoToContentValues(todo));
     writeableDB.close();
+
+    if (DBHelper.NETWORK_REACHABLE) {
+      updateOnRemove(todo);
+    }
   }
 
   public void deleteById(final String todoId) {
@@ -101,14 +123,39 @@ public class TodoRepository extends SQLiteOpenHelper {
     final String[] selectionArgs = {todoId};
     writeableDB.delete(TABLE, ID_SELECTION_CLAUSE, selectionArgs);
     writeableDB.close();
+
+    if (DBHelper.NETWORK_REACHABLE) {
+      deleteOnRemote(todoId);
+    }
   }
 
   public void update(final Todo todo) {
     final SQLiteDatabase writeableDB = getWritableDatabase();
-    final String[] selectionArgs = {String.valueOf(todo.get_id())};
+    final String[] selectionArgs = {todo.get_id()};
 
     writeableDB.update(TABLE, todoToContentValues(todo), ID_SELECTION_CLAUSE, selectionArgs);
     writeableDB.close();
+
+    if (DBHelper.NETWORK_REACHABLE) {
+      updateOnRemove(todo);
+    }
+  }
+
+  @SneakyThrows
+  @SuppressWarnings("unchecked")
+  private void updateOnRemove(final Todo todo) {
+    AsyncPutRequest.builder()
+      .onResponse(asyncResponses -> {
+      })
+      .build()
+      .execute(Pair.<URL, String>builder().left(toUrl(BACKEND_BASE_URL + TODOS_ENDPOINT + URL_DELIMITER + todo.get_id()))
+        .right(ObjectMapperFactory.mapper().writeValueAsString(todo))
+        .build());
+  }
+
+  private void deleteOnRemote(final String todoId) {
+    AsyncDeleteRequest.builder().onResponse(asyncResponses -> {
+    }).build().execute(toUrl(BACKEND_BASE_URL + TODOS_ENDPOINT + URL_DELIMITER + todoId));
   }
 
   private ContentValues todoToContentValues(final Todo todo) {

@@ -52,7 +52,7 @@ public class TodoArrayAdapter extends ArrayAdapter<Todo> {
     doneRemoveButton.setText(currentTodo.isCompleted() ? "Remove" : "Done");
 
     final TextView idTextView = listItem.findViewById(id.todo_id);
-    idTextView.setText(String.valueOf(currentTodo.get_id()));
+    idTextView.setText(currentTodo.get_id());
 
     if (currentTodo.isCompleted()) {
       todoTitleView.setPaintFlags(todoTitleView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);

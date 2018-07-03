@@ -15,6 +15,7 @@ import android.widget.TextView;
 import beutel.ferenc.de.todolists.R.id;
 import beutel.ferenc.de.todolists.R.layout;
 import beutel.ferenc.de.todolists.R.menu;
+import beutel.ferenc.de.todolists.common.domain.DBHelper;
 import beutel.ferenc.de.todolists.todo.domain.TodoRepository;
 import beutel.ferenc.de.todolists.todo.view.CreationActivity;
 import beutel.ferenc.de.todolists.todo.view.DetailActivity;
@@ -23,14 +24,20 @@ import beutel.ferenc.de.todolists.todo.view.TodoArrayAdapter;
 public class TodoListActivity extends AppCompatActivity {
 
   private TodoRepository todoRepository;
+  private TextView backendNotAvailableErrorView;
   private ListView todoListView;
 
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(layout.activity_main);
+    setContentView(layout.activity_list);
     todoListView = findViewById(id.list_todo);
+    backendNotAvailableErrorView = findViewById(id.backend_not_available_error);
     todoRepository = new TodoRepository(this);
+
+    if (!DBHelper.NETWORK_REACHABLE) {
+      backendNotAvailableErrorView.setVisibility(View.VISIBLE);
+    }
 
     updateUI();
   }

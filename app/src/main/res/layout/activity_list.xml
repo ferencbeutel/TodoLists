@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context="beutel.ferenc.de.todolists.todolist.view.TodoListActivity">
+
+  <TextView
+    android:id="@+id/backend_not_available_error"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:background="@color/errorColor"
+    android:layout_centerHorizontal="true"
+    android:textSize="16sp"
+    android:gravity="center"
+    android:visibility="gone"
+    android:text="ERROR: Backend not reachable"/>
+
+  <ListView
+    android:id="@+id/list_todo"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/backend_not_available_error"/>
+
+</RelativeLayout>
