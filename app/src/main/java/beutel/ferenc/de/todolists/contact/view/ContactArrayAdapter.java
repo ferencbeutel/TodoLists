@@ -8,8 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.QuickContactBadge;
 import android.widget.TextView;
-import beutel.ferenc.de.todolists.R.id;
+import beutel.ferenc.de.todolists.R;
 import beutel.ferenc.de.todolists.R.layout;
 import beutel.ferenc.de.todolists.contact.domain.Contact;
 
@@ -32,9 +33,17 @@ public class ContactArrayAdapter extends ArrayAdapter<Contact> {
 
     final Contact currentContact = contacts.get(position);
 
-    final TextView contactNameView = listItem.findViewById(id.contact_name);
-    contactNameView.setText(currentContact.getName());
+        final QuickContactBadge quickContactBadge = listItem.findViewById(R.id.quick_contact_badge);
+        quickContactBadge.assignContactUri(currentContact.getContactUri());
+        quickContactBadge.setImageBitmap(currentContact.profileImageBitmap(context));
 
-    return listItem;
-  }
+        final TextView contactNameView = listItem.findViewById(R.id.contact_name);
+        contactNameView.setText(currentContact.getName());
+
+        final TextView contactIdTextView = listItem.findViewById(R.id.contact_id);
+        contactIdTextView.setText(currentContact.get_id());
+
+        return listItem;
+
+    }
 }

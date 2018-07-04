@@ -1,6 +1,7 @@
 package beutel.ferenc.de.todolists.contact.domain;
 
 import static android.provider.BaseColumns._ID;
+import static android.provider.ContactsContract.*;
 import static beutel.ferenc.de.todolists.contact.domain.ContactContract.ContactEntry.ALL_COLUMNS;
 import static beutel.ferenc.de.todolists.contact.domain.ContactContract.ContactEntry.TABLE;
 
@@ -13,27 +14,28 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
-import android.provider.ContactsContract.Contacts;
 import beutel.ferenc.de.todolists.common.domain.DBHelper;
 import beutel.ferenc.de.todolists.todo.domain.Todo;
 
 public class ContactRepository extends SQLiteOpenHelper {
 
-  private final Context context;
+    private static final String ID_SELECTION_CLAUSE = _ID + "=?";
 
-  public ContactRepository(final Context context) {
-    super(context, ContactContract.DB_NAME, null, ContactContract.DB_VERSION);
+    private final Context context;
 
-    this.context = context;
-  }
+    public ContactRepository(final Context context) {
+        super(context, ContactContract.DB_NAME, null, ContactContract.DB_VERSION);
 
-  private static List<Contact> cursorToContact(final Cursor cursor, final Context context) {
-    final List<Contact> fetchedContacts = new ArrayList<>();
+        this.context = context;
+    }
+
+    private static List<Contact> cursorToContact(final Cursor cursor, final Context context) {
+        final List<Contact> fetchedContacts = new ArrayList<>();
 
     while (cursor.moveToNext()) {
-      final int id = cursor.getInt(cursor.getColumnIndex(_ID));
+      final String id = cursor.getString(cursor.getColumnIndex(_ID));
       final Cursor moreDataCursor = context.getContentResolver()
-        .query(Contacts.CONTENT_URI, new String[]{Contacts.DISPLAY_NAME, Contacts.PHOTO_THUMBNAIL_URI}, _ID + "=?",
+        .query(Contacts.CONTENT_URI, new String[]{Contacts.DISPLAY_NAME, Contacts.PHOTO_THUMBNAIL_URI, Contacts.LOOKUP_KEY}, _ID + "=?",
           new String[]{String.valueOf(id)}, null);
 
       if (moreDataCursor != null && moreDataCursor.moveToFirst()) {
@@ -41,7 +43,8 @@ public class ContactRepository extends SQLiteOpenHelper {
         fetchedContacts.add(Contact.builder()
           ._id(id)
           .name(moreDataCursor.getString(moreDataCursor.getColumnIndex(Contacts.DISPLAY_NAME)))
-          .profileImageUri(photoUri != null ? Uri.parse(photoUri) : null)
+          .contactUri(Contacts.getLookupUri(Long.parseLong(id), moreDataCursor.getString(moreDataCursor.getColumnIndex(Contacts.LOOKUP_KEY))))
+                        .profileImageUri(photoUri != null ? Uri.parse(photoUri) : null)
           .build());
         moreDataCursor.close();
       }
@@ -61,18 +64,20 @@ public class ContactRepository extends SQLiteOpenHelper {
     DBHelper.UPDATE_DB_COMMANDS().forEach(db::execSQL);
   }
 
-  public Integer insertByUri(final Uri contactUri) {
-    final SQLiteDatabase writeableDB = getWritableDatabase();
-    final Integer contactId = getContactId(contactUri);
-    if (contactId != null) {
-      writeableDB.insert(TABLE, null, contactToContentValues(Contact.builder()._id(contactId).build()));
-    }
-    writeableDB.close();
+    public String insertByUri(final Uri contactUri) {
+        final SQLiteDatabase writeableDB = getWritableDatabase();
+        String contactId = getContactId(contactUri);
+        if (contactId != null) {
+            writeableDB.insert(TABLE, null, contactToContentValues(Contact.builder()
+                    ._id(contactId)
+                    .build()));
+        }
+        writeableDB.close();
 
     return contactId;
   }
 
-  private Integer getContactId(final Uri contactUri) {
+  private String getContactId(final Uri contactUri) {
     final Cursor idCursor = context.getContentResolver().query(contactUri, null, null, null);
 
     if (idCursor == null) {
@@ -80,7 +85,7 @@ public class ContactRepository extends SQLiteOpenHelper {
     }
 
     if (idCursor.moveToFirst()) {
-      final Integer resultId = idCursor.getInt(idCursor.getColumnIndex(_ID));
+      final String resultId = idCursor.getString(idCursor.getColumnIndex(_ID));
       idCursor.close();
       return resultId;
     }
@@ -106,4 +111,11 @@ public class ContactRepository extends SQLiteOpenHelper {
 
     return result;
   }
+
+    public void deleteById(String contactId) {
+        final SQLiteDatabase writeableDB = getWritableDatabase();
+        final String[] selectionArgs = {contactId};
+        writeableDB.delete(ContactContract.ContactEntry.TABLE, ID_SELECTION_CLAUSE, selectionArgs);
+        writeableDB.close();
+    }
 }

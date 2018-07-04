@@ -20,6 +20,7 @@
     android:id="@+id/list_todo"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+      android:layout_marginTop="8sp"
     android:layout_below="@id/backend_not_available_error"/>
 
 </RelativeLayout>

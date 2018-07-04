@@ -7,7 +7,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
+import static java.util.stream.Collectors.toSet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -29,21 +31,22 @@ public class Todo {
   private final String title;
   private final String description;
   private final LocalDateTime dueDateTime;
-  private final boolean favorite;
+  private final LocalDateTime completionDateTime;
+    private final boolean favorite;
   private final boolean completed;
-  private final List<String> contactIds;
+  private final Set<String> contactIds;
 
-  static List<String> contactIdsFromString(final String contactIdsString) {
+  static Set<String> contactIdsFromString(final String contactIdsString) {
     return Arrays.stream(contactIdsString.split(CONTACT_IDS_DELIMITER))
       .filter(contactId -> !contactId.isEmpty())
-      .collect(toList());
+      .collect(toSet());
   }
 
-  @JsonIgnore
-  public boolean isValid() {
-    final LocalDateTime now = LocalDateTime.now();
-    return title != null && description != null && dueDateTime != null && !title.isEmpty() && dueDateTime.isAfter(now);
-  }
+  @JsonIgnore  public boolean isNotValid(){
+        return title == null ||
+                description == null ||
+                dueDateTime == null ||title.isEmpty() ;
+    }
 
   @JsonIgnore
   public String contactIdString() {
@@ -52,26 +55,30 @@ public class Todo {
 
   @JsonIgnore
   public List<String> errorMessages() {
-    final LocalDateTime now = LocalDateTime.now();
-    final List<String> errors = new ArrayList<>();
+        final  List<String> errors = new ArrayList<>();
 
     if (title == null || title.isEmpty()) {
       errors.add("Title is mandatory");
     }
-    if (dueDateTime == null || !dueDateTime.isAfter(now)) {
-      errors.add("due date & time are mandatory and have to be in the future");
+    if (dueDateTime == null) {
+      errors.add("due date & time are mandatory");
     }
 
     return errors;
   }
 
-  @JsonIgnore
-  public String dueDateTimeAsString() {
-    return dueDateTime.format(DATE_TIME_FORMATTER);
-  }
+    @JsonIgnore
+    public boolean isOverDue() {
+        return LocalDateTime.now().isAfter(dueDateTime);
+    }
 
-  @JsonPOJOBuilder(withPrefix = "")
-  public static final class TodoBuilder {
+    @JsonIgnore
+    public String dueDateTimeAsString() {
+        return dueDateTime.format(DATE_TIME_FORMATTER);
+    }
 
-  }
+    @JsonIgnore
+    public String completionDateTimeAsString() {
+        return completionDateTime.format(DATE_TIME_FORMATTER);
+    }
 }

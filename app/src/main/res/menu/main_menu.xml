@@ -5,6 +5,12 @@
       android:layout_width="match_parent">
 
   <item
+        android:id="@+id/action_change_todo_sort"
+        android:icon="@android:drawable/ic_menu_sort_by_size"
+        android:title="Change todo sort order"
+        app:showAsAction="always" />
+
+    <item
     android:id="@+id/action_add_todo"
     android:icon="@android:drawable/ic_menu_add"
     android:title="Add Todo"

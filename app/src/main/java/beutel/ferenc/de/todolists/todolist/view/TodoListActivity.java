@@ -5,6 +5,10 @@ import static java.util.Optional.ofNullable;
 import static beutel.ferenc.de.todolists.todo.view.DetailActivity.TODO_ID_KEY;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -17,9 +21,13 @@ import beutel.ferenc.de.todolists.R.layout;
 import beutel.ferenc.de.todolists.R.menu;
 import beutel.ferenc.de.todolists.common.domain.DBHelper;
 import beutel.ferenc.de.todolists.todo.domain.TodoRepository;
-import beutel.ferenc.de.todolists.todo.view.CreationActivity;
 import beutel.ferenc.de.todolists.todo.view.DetailActivity;
 import beutel.ferenc.de.todolists.todo.view.TodoArrayAdapter;
+import beutel.ferenc.de.todolists.R;
+import beutel.ferenc.de.todolists.todo.view.CreateActivity;
+import beutel.ferenc.de.todolists.todolist.domain.SortOrder;
+
+import java.time.LocalDateTime;
 
 public class TodoListActivity extends AppCompatActivity {
 
@@ -27,13 +35,17 @@ public class TodoListActivity extends AppCompatActivity {
   private TextView backendNotAvailableErrorView;
   private ListView todoListView;
 
-  @Override
-  protected void onCreate(final Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(layout.activity_list);
-    todoListView = findViewById(id.list_todo);
-    backendNotAvailableErrorView = findViewById(id.backend_not_available_error);
-    todoRepository = new TodoRepository(this);
+    private SortOrder currentSortOrder;@Override
+    protected void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(layout.activity_list);
+        todoListView = findViewById(id.list_todo);
+        backendNotAvailableErrorView = findViewById(id.backend_not_available_error);
+        todoRepository = new TodoRepository(this);
+
+        currentSortOrder = SortOrder.IMPORTANCE;
+
+        updateUI();
 
     if (!DBHelper.NETWORK_REACHABLE) {
       backendNotAvailableErrorView.setVisibility(View.VISIBLE);
@@ -52,30 +64,35 @@ public class TodoListActivity extends AppCompatActivity {
   public boolean onOptionsItemSelected(final MenuItem item) {
     switch (item.getItemId()) {
       case id.action_add_todo:
-        final Intent creationIntent = new Intent(this, CreationActivity.class);
+        final Intent creationIntent = new Intent(this, CreateActivity.class);
         startActivity(creationIntent);
 
         return true;
 
-      default:
-        return super.onOptionsItemSelected(item);
-    }
-  }
+            case R.id.action_change_todo_sort:
+                flipSortOrder();
+                item.setIcon(flipIcon(item.getIcon()));
+                updateUI();
 
-  public void onTodoClick(final View clickedView) {
-    ofNullable((TextView) ((View) clickedView.getParent()).findViewById(id.todo_id)).ifPresent(view -> {
-      final String todoId = view.getText().toString();
-      if (!todoId.isEmpty()) {
-        todoRepository.findById(todoId).ifPresent(todo -> {
-          if (!todo.isCompleted()) {
-            final Intent detailIntent = new Intent(this, DetailActivity.class);
-            detailIntent.putExtra(TODO_ID_KEY, todoId);
-            startActivity(detailIntent);
-          }
-        });
-      }
-    });
-  }
+                return true;default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void onTodoClick(final View clickedView) {
+        ofNullable((TextView)  clickedView.findViewById(id.todo_id))
+                .ifPresent( view -> {
+                   final String todoId = view.getText().toString();
+                    if (!todoId.isEmpty()) {
+                        todoRepository.findById(todoId).ifPresent(todo -> {
+
+                                final Intent detailIntent = new Intent(this, DetailActivity.class);
+                                detailIntent.putExtra(TODO_ID_KEY, todoId);
+                                startActivity(detailIntent);
+                            });
+                        }
+                    });
+                }
 
   public void onDeleteButtonClick(final View clickedView) {
     ofNullable((TextView) ((View) clickedView.getParent()).findViewById(id.todo_id)).ifPresent(view -> {
@@ -85,7 +102,8 @@ public class TodoListActivity extends AppCompatActivity {
           if (todo.isCompleted()) {
             todoRepository.deleteById(todoId);
           } else {
-            todoRepository.update(todo.toBuilder().completed(true).build());
+            todoRepository.update(todo.toBuilder().completed(true).completionDateTime(LocalDateTime.now())
+                                        .build());
           }
         });
       }
@@ -95,6 +113,25 @@ public class TodoListActivity extends AppCompatActivity {
   }
 
   private void updateUI() {
-    todoListView.setAdapter(new TodoArrayAdapter(this, todoRepository.findAllOrderedByPriority()));
+    todoListView.setAdapter(new TodoArrayAdapter(this, todoRepository.findAllOrderedBy(currentSortOrder)));
+    }
+
+    private Drawable flipIcon(final Drawable originalIcon) {
+        final Matrix matrix = new Matrix();
+        matrix.preScale(1, -1);
+
+        final Bitmap oldBitmap = ((BitmapDrawable) originalIcon).getBitmap();
+
+        final Bitmap flippedIcon = Bitmap.createBitmap(oldBitmap, 0, 0, oldBitmap.getWidth(), oldBitmap.getHeight(), matrix, true);
+
+        return new BitmapDrawable(getResources(), flippedIcon);
+    }
+
+    private void flipSortOrder() {
+        if (currentSortOrder == SortOrder.IMPORTANCE) {
+            currentSortOrder = SortOrder.DATE;
+        } else {
+            currentSortOrder = SortOrder.IMPORTANCE;
+        }
   }
 }

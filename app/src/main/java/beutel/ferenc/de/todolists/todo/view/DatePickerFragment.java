@@ -17,14 +17,18 @@ public class DatePickerFragment extends DialogFragment implements OnDateSetListe
 
   private static final String DELIMITER = ".";
 
-  static LocalDate parseIntoLocalDate(final String toParse) {
-    final String[] dateParts = toParse.split("\\" + DELIMITER);
-    return LocalDate.of(parseInt(dateParts[2]), parseInt(dateParts[1]), parseInt(dateParts[0]));
-  }
+     static LocalDate parseIntoLocalDate(final String toParse) {
+        final String[] dateParts = toParse.split("\\" + DELIMITER);
+        return LocalDate.of(parseInt(dateParts[2]), parseInt(dateParts[1]), parseInt(dateParts[0]));
+    }
 
-  @Override
-  public Dialog onCreateDialog(final Bundle savedInstanceState) {
-    final LocalDate today = LocalDate.now();
+    static String getButtonText(final int year, final int month, final int dayOfMonth) {
+        return dayOfMonth + DELIMITER + month + DELIMITER + year;
+    }
+
+    @Override
+    public Dialog onCreateDialog(final Bundle savedInstanceState) {
+        final LocalDate today = LocalDate.now();
 
     return new DatePickerDialog(getActivity(), this, today.getYear(), today.getMonthValue(), today.getDayOfMonth());
   }
@@ -32,7 +36,7 @@ public class DatePickerFragment extends DialogFragment implements OnDateSetListe
   @Override
   public void onDateSet(final DatePicker view, final int year, final int month, final int dayOfMonth) {
     final Button dueDateButton = getActivity().findViewById(id.due_date_button);
-    final String newButtonText = dayOfMonth + DELIMITER + month + DELIMITER + year;
+    final String newButtonText = DatePickerFragment.getButtonText(year, month, dayOfMonth);
     dueDateButton.setText(newButtonText);
   }
 }
