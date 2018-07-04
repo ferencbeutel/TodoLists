@@ -29,9 +29,7 @@ public class AsyncDeleteRequest extends AsyncTask<URL, String, List<AsyncRespons
       try {
         final HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
         httpURLConnection.setRequestMethod("DELETE");
-        responses.add(AsyncResponse.builder()
-          .responseCode(httpURLConnection.getResponseCode())
-          .build());
+        responses.add(AsyncResponse.builder().responseCode(httpURLConnection.getResponseCode()).build());
       } catch (final Exception exception) {
         Log.d("AsnycRequest", "Error during async request", exception);
       }

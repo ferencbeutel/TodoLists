@@ -9,57 +9,60 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.ToggleButton;
-import beutel.ferenc.de.todolists.R;
+import beutel.ferenc.de.todolists.R.drawable;
+import beutel.ferenc.de.todolists.R.id;
+import beutel.ferenc.de.todolists.R.layout;
 import beutel.ferenc.de.todolists.todo.domain.TodoRepository;
 
 public abstract class AbstractCreateEditActivity extends AppCompatActivity {
 
-    TodoRepository todoRepository;
+  TodoRepository todoRepository;
 
-    EditText titleInput;
-    EditText descriptionInput;
-    ToggleButton favouriteButton;
+  EditText titleInput;
+  EditText descriptionInput;
+  ToggleButton favouriteButton;
 
-    Button dueDateButton;
-    Button dueTimeButton;
+  Button dueDateButton;
+  Button dueTimeButton;
 
-    TextView errorMessage;
+  TextView errorMessage;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_create_edit);
+  @Override
+  protected void onCreate(final Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(layout.activity_create_edit);
 
-        todoRepository = new TodoRepository(this);
+    todoRepository = new TodoRepository(this);
 
+    titleInput = findViewById(id.title_input);
+    descriptionInput = findViewById(id.description_input);
+    favouriteButton = findViewById(id.favourite_button);
 
-        titleInput = findViewById(R.id.title_input);
-        descriptionInput = findViewById(R.id.description_input);
-        favouriteButton = findViewById(R.id.favourite_button);
+    dueDateButton = findViewById(id.due_date_button);
+    dueTimeButton = findViewById(id.due_time_button);
 
-        dueDateButton = findViewById(R.id.due_date_button);
-        dueTimeButton = findViewById(R.id.due_time_button);
+    errorMessage = findViewById(id.creation_errors);
 
-        errorMessage = findViewById(R.id.creation_errors);
+    favouriteButton.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), drawable.ic_star_border_black_24dp));
+    favouriteButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+      if (isChecked) {
+        favouriteButton.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), drawable.ic_star_black_24dp));
+      } else {
+        favouriteButton.setBackgroundDrawable(
+          ContextCompat.getDrawable(getApplicationContext(), drawable.ic_star_border_black_24dp));
+      }
+    });
+  }
 
-        favouriteButton.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_star_border_black_24dp));
-        favouriteButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked)
-                favouriteButton.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_star_black_24dp));
-            else
-                favouriteButton.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_star_border_black_24dp));
-        });
-    }
+  public void onDatePickButtonClick(final View view) {
+    final DialogFragment datePickerFragment = new DatePickerFragment();
+    datePickerFragment.show(getFragmentManager(), "Date Picker");
+  }
 
-    public void onDatePickButtonClick(final View view) {
-        final DialogFragment datePickerFragment = new DatePickerFragment();
-        datePickerFragment.show(getFragmentManager(), "Date Picker");
-    }
+  public void onTimePickButtonClick(final View view) {
+    final DialogFragment timePickFragment = new TimePickerFragment();
+    timePickFragment.show(getFragmentManager(), "Date Picker");
+  }
 
-    public void onTimePickButtonClick(final View view) {
-        final DialogFragment timePickFragment = new TimePickerFragment();
-        timePickFragment.show(getFragmentManager(), "Date Picker");
-    }
-
-    public abstract void onCreationButtonClick(final View view);
+  public abstract void onSaveButtonClicked(final View view);
 }

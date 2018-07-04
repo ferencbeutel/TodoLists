@@ -35,9 +35,7 @@ public class AsyncPutRequest extends AsyncTask<Pair<URL, String>, String, List<A
         httpURLConnection.setRequestProperty("Content-Type", "application/json");
         httpURLConnection.setRequestProperty("Content-Length", String.valueOf(bytesToWrite.length));
         httpURLConnection.getOutputStream().write(bytesToWrite);
-        responses.add(AsyncResponse.builder()
-          .responseCode(httpURLConnection.getResponseCode())
-          .build());
+        responses.add(AsyncResponse.builder().responseCode(httpURLConnection.getResponseCode()).build());
       } catch (final Exception exception) {
         Log.d("AsnycRequest", "Error during async request", exception);
       }

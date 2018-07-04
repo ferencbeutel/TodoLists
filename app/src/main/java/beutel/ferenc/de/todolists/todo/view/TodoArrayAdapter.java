@@ -13,7 +13,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import beutel.ferenc.de.todolists.R;
 import beutel.ferenc.de.todolists.R.color;
 import beutel.ferenc.de.todolists.R.drawable;
 import beutel.ferenc.de.todolists.R.id;
@@ -69,11 +68,11 @@ public class TodoArrayAdapter extends ArrayAdapter<Todo> {
       todoDueDateTimeView.setTextColor(ContextCompat.getColor(context, color.textColor));
     }
 
-        if (currentTodo.isOverDue()) {
-            listItem.setBackgroundColor(context.getResources().getColor(R.color.errorColor, null));
-        } else {
-            listItem.setBackgroundColor(context.getResources().getColor(R.color.colorListBackground, null));
-        }return listItem;
-
+    if (currentTodo.isOverDue()) {
+      listItem.setBackgroundColor(context.getResources().getColor(color.errorColor, null));
+    } else {
+      listItem.setBackgroundColor(context.getResources().getColor(color.colorListBackground, null));
     }
+    return listItem;
+  }
 }

@@ -1,13 +1,8 @@
 package beutel.ferenc.de.todolists.todo.domain;
 
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import beutel.ferenc.de.todolists.common.domain.DBHelper;
-import beutel.ferenc.de.todolists.todolist.domain.SortOrder;
-import lombok.AllArgsConstructor;
+import static java.time.Instant.ofEpochSecond;
+import static java.time.LocalDateTime.ofInstant;
+
 import static android.provider.BaseColumns._ID;
 import static beutel.ferenc.de.todolists.common.http.UrlHelper.BACKEND_BASE_URL;
 import static beutel.ferenc.de.todolists.common.http.UrlHelper.TODOS_ENDPOINT;
@@ -15,6 +10,7 @@ import static beutel.ferenc.de.todolists.common.http.UrlHelper.URL_DELIMITER;
 import static beutel.ferenc.de.todolists.common.http.UrlHelper.toUrl;
 import static beutel.ferenc.de.todolists.todo.domain.TodoContract.TodoEntry.ALL_COLUMNS;
 import static beutel.ferenc.de.todolists.todo.domain.TodoContract.TodoEntry.COL_TODO_COMPLETED;
+import static beutel.ferenc.de.todolists.todo.domain.TodoContract.TodoEntry.COL_TODO_COMPLETION_DATE_TIME;
 import static beutel.ferenc.de.todolists.todo.domain.TodoContract.TodoEntry.COL_TODO_CONTACT_IDS;
 import static beutel.ferenc.de.todolists.todo.domain.TodoContract.TodoEntry.COL_TODO_DESCRIPTION;
 import static beutel.ferenc.de.todolists.todo.domain.TodoContract.TodoEntry.COL_TODO_DUE_DATE_TIME;
@@ -25,20 +21,12 @@ import static beutel.ferenc.de.todolists.todo.domain.TodoRepository.OrderDirecti
 import static beutel.ferenc.de.todolists.todo.domain.TodoRepository.OrderDirection.DESC;
 
 import java.net.URL;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static android.provider.BaseColumns._ID;
-import static beutel.ferenc.de.todolists.todo.domain.TodoContract.TodoEntry.*;
-import static beutel.ferenc.de.todolists.todo.domain.TodoRepository.OrderDirection.ASC;
-import static beutel.ferenc.de.todolists.todo.domain.TodoRepository.OrderDirection.DESC;
-import static java.time.Instant.ofEpochSecond;
-import static java.time.LocalDateTime.ofInstant;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 
@@ -52,6 +40,7 @@ import beutel.ferenc.de.todolists.common.domain.Pair;
 import beutel.ferenc.de.todolists.common.http.AsyncDeleteRequest;
 import beutel.ferenc.de.todolists.common.http.AsyncPutRequest;
 import beutel.ferenc.de.todolists.common.http.ObjectMapperFactory;
+import beutel.ferenc.de.todolists.todolist.domain.SortOrder;
 
 public class TodoRepository extends SQLiteOpenHelper {
 
@@ -64,18 +53,20 @@ public class TodoRepository extends SQLiteOpenHelper {
   private static List<Todo> cursorToTodo(final Cursor cursor) {
     final List<Todo> storedTodos = new ArrayList<>();
 
-        while (cursor.moveToNext()) {
-            storedTodos.add(Todo.builder()
-                    ._id(String.valueOf(cursor.getString(cursor.getColumnIndex(_ID))))
-                    .title(cursor.getString(cursor.getColumnIndex(COL_TODO_TITLE)))
-                    .description(cursor.getString(cursor.getColumnIndex(COL_TODO_DESCRIPTION)))
-                    .dueDateTime(ofInstant(ofEpochSecond(cursor.getLong(cursor.getColumnIndex(COL_TODO_DUE_DATE_TIME)), 0), ZoneId.systemDefault()))
-                    .completionDateTime(ofInstant(ofEpochSecond(cursor.getLong(cursor.getColumnIndex(COL_TODO_COMPLETION_DATE_TIME)),0), ZoneId.systemDefault()))
-                    .favorite(cursor.getInt(cursor.getColumnIndex(COL_TODO_FAVOURITE)) > 0)
-                    .completed(cursor.getInt(cursor.getColumnIndex(COL_TODO_COMPLETED)) > 0)
-                    .contactIds(Todo.contactIdsFromString(cursor.getString(cursor.getColumnIndex(COL_TODO_CONTACT_IDS))))
-                    .build());
-        }
+    while (cursor.moveToNext()) {
+      storedTodos.add(Todo.builder()
+        ._id(String.valueOf(cursor.getString(cursor.getColumnIndex(_ID))))
+        .title(cursor.getString(cursor.getColumnIndex(COL_TODO_TITLE)))
+        .description(cursor.getString(cursor.getColumnIndex(COL_TODO_DESCRIPTION)))
+        .dueDateTime(
+          ofInstant(ofEpochSecond(cursor.getLong(cursor.getColumnIndex(COL_TODO_DUE_DATE_TIME)), 0), ZoneId.systemDefault()))
+        .completionDateTime(ofInstant(ofEpochSecond(cursor.getLong(cursor.getColumnIndex(COL_TODO_COMPLETION_DATE_TIME)), 0),
+          ZoneId.systemDefault()))
+        .favorite(cursor.getInt(cursor.getColumnIndex(COL_TODO_FAVOURITE)) > 0)
+        .completed(cursor.getInt(cursor.getColumnIndex(COL_TODO_COMPLETED)) > 0)
+        .contactIds(Todo.contactIdsFromString(cursor.getString(cursor.getColumnIndex(COL_TODO_CONTACT_IDS))))
+        .build());
+    }
 
     cursor.close();
 
@@ -102,15 +93,10 @@ public class TodoRepository extends SQLiteOpenHelper {
     return !foundTodos.isEmpty() ? Optional.of(foundTodos.get(0)) : Optional.empty();
   }
 
-    public List<Todo> findAllOrderedBy(final SortOrder sortOrder) {
-        final SQLiteDatabase readableDB = getReadableDatabase();
-        final List<Todo> result = cursorToTodo(readableDB.query(TABLE,
-                ALL_COLUMNS,
-                null,
-                null,
-                null,
-                null,
-                determineOrderParams(sortOrder)));
+  public List<Todo> findAllOrderedBy(final SortOrder sortOrder) {
+    final SQLiteDatabase readableDB = getReadableDatabase();
+    final List<Todo> result = cursorToTodo(
+      readableDB.query(TABLE, ALL_COLUMNS, null, null, null, null, determineOrderParams(sortOrder)));
 
     readableDB.close();
     return result;
@@ -126,11 +112,11 @@ public class TodoRepository extends SQLiteOpenHelper {
 
   public void insert(final Todo todo) {
     final SQLiteDatabase writeableDB = getWritableDatabase();
-    writeableDB.insert(TABLE, null, todoToContentValues(todo));
+    final long insertedId = writeableDB.insert(TABLE, null, todoToContentValues(todo));
     writeableDB.close();
 
     if (DBHelper.NETWORK_REACHABLE) {
-      updateOnRemove(todo);
+      updateOnRemove(todo.toBuilder()._id(String.valueOf(insertedId)).build());
     }
   }
 
@@ -174,32 +160,34 @@ public class TodoRepository extends SQLiteOpenHelper {
     }).build().execute(toUrl(BACKEND_BASE_URL + TODOS_ENDPOINT + URL_DELIMITER + todoId));
   }
 
-    private ContentValues todoToContentValues(final Todo todo) {
-        final ContentValues values = new ContentValues();
-        values.put(COL_TODO_TITLE, todo.getTitle());
-        values.put(COL_TODO_DESCRIPTION, todo.getDescription());
-        values.put(COL_TODO_DUE_DATE_TIME, todo.getDueDateTime().atZone(ZoneId.systemDefault()).toEpochSecond());
-        values.put(COL_TODO_DUE_DATE_TIME, todo.getDueDateTime().atZone(ZoneId.systemDefault()).toEpochSecond());values.put(COL_TODO_FAVOURITE, todo.isFavorite());
-        values.put(COL_TODO_COMPLETED, todo.isCompleted());
-        values.put(COL_TODO_CONTACT_IDS, todo.contactIdString());
+  private ContentValues todoToContentValues(final Todo todo) {
+    final ContentValues values = new ContentValues();
+    values.put(COL_TODO_TITLE, todo.getTitle());
+    values.put(COL_TODO_DESCRIPTION, todo.getDescription());
+    values.put(COL_TODO_DUE_DATE_TIME, todo.getDueDateTime().atZone(ZoneId.systemDefault()).toEpochSecond());
+    values.put(COL_TODO_DUE_DATE_TIME, todo.getDueDateTime().atZone(ZoneId.systemDefault()).toEpochSecond());
+    values.put(COL_TODO_FAVOURITE, todo.isFavorite());
+    values.put(COL_TODO_COMPLETED, todo.isCompleted());
+    values.put(COL_TODO_CONTACT_IDS, todo.contactIdString());
 
-        if (todo.isCompleted()) {
-            values.put(COL_TODO_COMPLETION_DATE_TIME, todo.getCompletionDateTime().atZone(ZoneId.systemDefault()).toEpochSecond());
-        }return values;
+    if (todo.isCompleted()) {
+      values.put(COL_TODO_COMPLETION_DATE_TIME, todo.getCompletionDateTime().atZone(ZoneId.systemDefault()).toEpochSecond());
     }
+    return values;
+  }
 
   private String determineOrderParams(final SortOrder sortOrder) {
-        final List<OrderParam> orderParams = new ArrayList<>();
+    final List<OrderParam> orderParams = new ArrayList<>();
 
-        orderParams.add(new OrderParam(COL_TODO_COMPLETED, ASC));
+    orderParams.add(new OrderParam(COL_TODO_COMPLETED, ASC));
 
-        if (sortOrder == SortOrder.DATE) {
-            orderParams.add(new OrderParam(COL_TODO_DUE_DATE_TIME, ASC));
-            orderParams.add(new OrderParam(COL_TODO_FAVOURITE, DESC));
-        } else {
-            orderParams.add(new OrderParam(COL_TODO_FAVOURITE, DESC));
-            orderParams.add(new OrderParam(COL_TODO_DUE_DATE_TIME, ASC));
-        }
+    if (sortOrder == SortOrder.DATE) {
+      orderParams.add(new OrderParam(COL_TODO_DUE_DATE_TIME, ASC));
+      orderParams.add(new OrderParam(COL_TODO_FAVOURITE, DESC));
+    } else {
+      orderParams.add(new OrderParam(COL_TODO_FAVOURITE, DESC));
+      orderParams.add(new OrderParam(COL_TODO_DUE_DATE_TIME, ASC));
+    }
 
     return orderParams.stream().map(OrderParam::toString).collect(Collectors.joining(","));
   }

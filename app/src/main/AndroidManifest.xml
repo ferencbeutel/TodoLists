@@ -20,8 +20,8 @@
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
-    <activity android:name=".todo.view.CreateActivity" />
-        <activity android:name=".todo.view.EditActivity"/>
+    <activity android:name=".todo.view.CreateActivity"/>
+    <activity android:name=".todo.view.EditActivity"/>
     <activity android:name=".todo.view.DetailActivity"/>
     <activity android:name=".todolist.view.TodoListActivity"/>
     <activity android:name=".login.view.LoginActivity"/>

@@ -14,16 +14,11 @@ public class DBHelper {
     final List<String> commands = new ArrayList<>();
     commands.add("CREATE TABLE " + ContactEntry.TABLE + " ( " + ContactEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + ");");
 
-        commands.add("CREATE TABLE " + TodoEntry.TABLE + " ( " +
-                TodoEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                TodoEntry.COL_TODO_TITLE + " TEXT NOT NULL, " +
-                TodoEntry.COL_TODO_DESCRIPTION + " TEXT NOT NULL, " +
-                TodoEntry.COL_TODO_DUE_DATE_TIME + " DATETIME NOT NULL, " +
-                TodoEntry.COL_TODO_COMPLETION_DATE_TIME + " DATETIME, " +
-                TodoEntry.COL_TODO_COMPLETED + " BOOLEAN NOT NULL, " +
-                TodoEntry.COL_TODO_FAVOURITE + " BOOLEAN NOT NULL, " +
-                TodoEntry.COL_TODO_CONTACT_IDS + " TEXT NOT NULL" +
-                ");");
+    commands.add("CREATE TABLE " + TodoEntry.TABLE + " ( " + TodoEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+      TodoEntry.COL_TODO_TITLE + " TEXT NOT NULL, " + TodoEntry.COL_TODO_DESCRIPTION + " TEXT NOT NULL, " +
+      TodoEntry.COL_TODO_DUE_DATE_TIME + " DATETIME NOT NULL, " + TodoEntry.COL_TODO_COMPLETION_DATE_TIME + " DATETIME, " +
+      TodoEntry.COL_TODO_COMPLETED + " BOOLEAN NOT NULL, " + TodoEntry.COL_TODO_FAVOURITE + " BOOLEAN NOT NULL, " +
+      TodoEntry.COL_TODO_CONTACT_IDS + " TEXT NOT NULL" + ");");
 
     return commands;
   }

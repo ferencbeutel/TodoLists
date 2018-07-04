@@ -18,18 +18,18 @@ public class TimePickerFragment extends DialogFragment implements OnTimeSetListe
 
   private static final String DELIMITER = ":";
 
-     static LocalTime parseIntoLocalTime(final String toParse) {
-        final String[] timeParts = toParse.split(DELIMITER);
-        return LocalTime.of(parseInt(timeParts[0]), parseInt(timeParts[1]));
-    }
+  static LocalTime parseIntoLocalTime(final String toParse) {
+    final String[] timeParts = toParse.split(DELIMITER);
+    return LocalTime.of(parseInt(timeParts[0]), parseInt(timeParts[1]));
+  }
 
-    static String getButtonText(final int hourOfDay, final int minute) {
-        return hourOfDay + DELIMITER + minute;
-    }
+  static String getButtonText(final int hourOfDay, final int minute) {
+    return hourOfDay + DELIMITER + minute;
+  }
 
-    @Override
-    public Dialog onCreateDialog(final Bundle savedInstanceState) {
-        final LocalTime now = LocalTime.now();
+  @Override
+  public Dialog onCreateDialog(final Bundle savedInstanceState) {
+    final LocalTime now = LocalTime.now();
 
     return new TimePickerDialog(getActivity(), this, now.getHour(), now.getMinute(), DateFormat.is24HourFormat(getActivity()));
   }

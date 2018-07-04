@@ -38,14 +38,14 @@
     android:layout_centerHorizontal="true"
     android:text="due to: 01.01.2000 13:37"/>
 
-    <TextView
-        android:id="@+id/detail_doneDateTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/detail_dueDateTime"
-        android:textSize="14sp"
-        android:layout_centerHorizontal="true"
-        android:text="completed: 31.12.1999 20:10" />
+  <TextView
+    android:id="@+id/detail_doneDateTime"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/detail_dueDateTime"
+    android:textSize="14sp"
+    android:layout_centerHorizontal="true"
+    android:text="completed: 31.12.1999 20:10"/>
 
   <LinearLayout
     android:id="@+id/detail_description_wrapper"

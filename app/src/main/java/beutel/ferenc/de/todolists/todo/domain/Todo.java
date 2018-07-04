@@ -1,6 +1,6 @@
 package beutel.ferenc.de.todolists.todo.domain;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toSet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -32,7 +31,7 @@ public class Todo {
   private final String description;
   private final LocalDateTime dueDateTime;
   private final LocalDateTime completionDateTime;
-    private final boolean favorite;
+  private final boolean favorite;
   private final boolean completed;
   private final Set<String> contactIds;
 
@@ -42,11 +41,10 @@ public class Todo {
       .collect(toSet());
   }
 
-  @JsonIgnore  public boolean isNotValid(){
-        return title == null ||
-                description == null ||
-                dueDateTime == null ||title.isEmpty() ;
-    }
+  @JsonIgnore
+  public boolean isNotValid() {
+    return title == null || description == null || dueDateTime == null || title.isEmpty();
+  }
 
   @JsonIgnore
   public String contactIdString() {
@@ -55,7 +53,7 @@ public class Todo {
 
   @JsonIgnore
   public List<String> errorMessages() {
-        final  List<String> errors = new ArrayList<>();
+    final List<String> errors = new ArrayList<>();
 
     if (title == null || title.isEmpty()) {
       errors.add("Title is mandatory");
@@ -67,18 +65,25 @@ public class Todo {
     return errors;
   }
 
-    @JsonIgnore
-    public boolean isOverDue() {
-        return LocalDateTime.now().isAfter(dueDateTime);
-    }
+  @JsonIgnore
+  public boolean isOverDue() {
+    return LocalDateTime.now().isAfter(dueDateTime);
+  }
 
-    @JsonIgnore
-    public String dueDateTimeAsString() {
-        return dueDateTime.format(DATE_TIME_FORMATTER);
-    }
+  @JsonIgnore
+  public String dueDateTimeAsString() {
+    return dueDateTime.format(DATE_TIME_FORMATTER);
+  }
 
-    @JsonIgnore
-    public String completionDateTimeAsString() {
-        return completionDateTime.format(DATE_TIME_FORMATTER);
-    }
+  @JsonIgnore
+  public String completionDateTimeAsString() {
+    return completionDateTime.format(DATE_TIME_FORMATTER);
+  }
+
+  @JsonPOJOBuilder(withPrefix = "")
+  public static final class TodoBuilder {
+
+  }
 }
+
+
